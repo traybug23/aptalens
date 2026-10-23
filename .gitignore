@@ -1,5 +1,5 @@
 # Data (too large for git, and re-downloadable from Kaggle)
-data/
+/data/
 *.npy
 
 # Python
