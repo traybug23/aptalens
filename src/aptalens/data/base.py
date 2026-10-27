@@ -1,8 +1,9 @@
 """Dataset container and validation for per-nucleotide sequence data."""
+
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 import numpy as np
 import pandas as pd
@@ -43,7 +44,7 @@ class SequenceDataset:
         """Rows of `positions` that carry ground-truth targets."""
         return self.positions[self.positions["scored"]]
 
-    def subset(self, ids: Iterable[str]) -> "SequenceDataset":
+    def subset(self, ids: Iterable[str]) -> SequenceDataset:
         """Return a dataset restricted to whole molecules (never partial molecules)."""
         wanted = pd.Index(list(ids))
         unknown = wanted.difference(pd.Index(self.molecules["id"]))
@@ -84,7 +85,9 @@ def validate(ds: SequenceDataset) -> None:
     counts = per_id.size().reindex(mol["id"])
     if not (counts.to_numpy() == mol["seq_length"].to_numpy()).all():
         raise ValueError("number of position rows differs from seq_length for some molecules")
-    if not (per_id["pos"].max().reindex(mol["id"]).to_numpy() == (mol["seq_length"] - 1).to_numpy()).all():
+    if not (
+        per_id["pos"].max().reindex(mol["id"]).to_numpy() == (mol["seq_length"] - 1).to_numpy()
+    ).all():
         raise ValueError("position index does not run 0..seq_length-1 for some molecules")
     if pos.duplicated(["id", "pos"]).any():
         raise ValueError("duplicate (id, pos) rows")
